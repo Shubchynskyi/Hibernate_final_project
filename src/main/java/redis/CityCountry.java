@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class CityCountry {
+public class CityCountry implements RedisEntity {
     private Integer id;
 
     private String name;

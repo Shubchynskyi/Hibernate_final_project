@@ -9,7 +9,6 @@ import lombok.ToString;
 @Table(name = "city")
 @Getter
 @Setter
-@ToString
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

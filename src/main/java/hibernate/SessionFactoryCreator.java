@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.reflections.Reflections;
 
 import java.util.Set;
@@ -14,6 +15,7 @@ public class SessionFactoryCreator {
     public SessionFactoryCreator() {
         Configuration configuration = new Configuration();
         configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
+        configuration.setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 
         String entityPackage = "entity";
         Reflections reflections = new Reflections(entityPackage);

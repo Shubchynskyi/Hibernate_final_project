@@ -13,7 +13,7 @@ public class CityDAO {
         this.sessionFactory = sessionFactory;
     }
 
-    public List<City> getItems(int offset, int limit) {
+    public List<City> getAll(int offset, int limit) {
         String hql = """
                 SELECT c FROM City c
                 """;
