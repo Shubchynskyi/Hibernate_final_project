@@ -1,20 +1,16 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
-import dao.CityDAO;
-import dao.CountryDAO;
+import dao.DaoService;
 import entity.City;
 import entity.Country;
 import entity.CountryLanguage;
 import hibernate.SessionFactoryCreator;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisStringCommands;
-import jakarta.transaction.Transactional;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import redis.CityCountry;
 import redis.Language;
 import redis.RedisService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,27 +19,24 @@ import static java.util.Objects.nonNull;
 
 public class Main {
 
-    private final SessionFactory sessionFactory;
-    private final CityDAO cityDAO;
-    private final CountryDAO countryDAO;
+    private final DaoService daoService;
     private final RedisService redisService;
 
-    public Main(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-        this.cityDAO = new CityDAO(sessionFactory);
-        this.countryDAO = new CountryDAO(sessionFactory);
-        this.redisService = new RedisService();
+    public Main(RedisService redisService, DaoService daoService) {
+        this.daoService = daoService;
+        this.redisService = redisService;
     }
 
     public static void main(String[] args) {
-        Main main = new Main(new SessionFactoryCreator().getSessionFactory());
+        Main main = new Main(new RedisService(), new DaoService(new SessionFactoryCreator().getSessionFactory()));
 
-        List<City> allCities = main.fetchData(main);
+        List<City> allCities = main.daoService.getData();
         List<CityCountry> preparedData = main.transformData(allCities);
         main.redisService.pushToRedis(preparedData);
 
         //закроем текущую сессию, чтоб точно делать запрос к БД, а не вытянуть данные из кэша
-        main.sessionFactory.getCurrentSession().close();
+        main.daoService.closeSession();
+
 
         //выбираем случайных 10 id городов
         //так как мы не делали обработку невалидных ситуаций, используй существующие в БД id
@@ -68,10 +61,10 @@ public class Main {
     }
 
     private void testMysqlData(List<Integer> ids) {
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = daoService.getSessionFactory().getCurrentSession()) {
             session.beginTransaction();
             for (Integer id : ids) {
-                City city = cityDAO.getById(id);
+                City city = daoService.getCityDAO().getById(id);
                 Set<CountryLanguage> languages = city.getCountry().getLanguages();
             }
             session.getTransaction().commit();
@@ -93,8 +86,8 @@ public class Main {
     }
 
     private void shutdown() {
-        if (nonNull(sessionFactory)) {
-            sessionFactory.close();
+        if (nonNull(daoService.getSessionFactory().getCurrentSession())) {
+            daoService.closeSession();
         }
         if (nonNull(redisService.client)) {
             redisService.client.shutdown();
@@ -132,20 +125,20 @@ public class Main {
     }
 
     // TODO move ???
-    private List<City> fetchData(Main main) {
-        try (Session session = main.sessionFactory.getCurrentSession()) {
-            List<City> allCities = new ArrayList<>();
-            session.beginTransaction();
-            List<Country> countries = main.countryDAO.getAll();
-
-            int totalCount = main.cityDAO.getTotalCount();
-            int step = 500;
-            for (int i = 0; i < totalCount; i += step) {
-                allCities.addAll(main.cityDAO.getAll(i, step));
-            }
-            session.getTransaction().commit();
-            return allCities;
-        }
-    }
+//    private List<City> getData(Main main) {
+//        try (Session session = main.sessionFactory.getCurrentSession()) {
+//            List<City> allCities = new ArrayList<>();
+//            session.beginTransaction();
+//            List<Country> countries = main.daoService.getCountryDAO().getAll();
+//
+//            int totalCount = main.cityDAO.getTotalCount();
+//            int step = 500;
+//            for (int i = 0; i < totalCount; i += step) {
+//                allCities.addAll(main.cityDAO.getAll(i, step));
+//            }
+//            session.getTransaction().commit();
+//            return allCities;
+//        }
+//    }
 
 }

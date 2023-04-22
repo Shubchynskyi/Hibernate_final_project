@@ -27,7 +27,6 @@ public class RedisService {
         return redisClient;
     }
 
-    // TODO generic
     public <T extends RedisEntity> void pushToRedis(List<T> data) {
         try (StatefulRedisConnection<String, String> connection = client.connect()) {
             RedisStringCommands<String, String> sync = connection.sync();
