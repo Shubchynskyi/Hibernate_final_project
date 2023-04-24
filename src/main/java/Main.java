@@ -6,10 +6,13 @@ import entity.CountryLanguage;
 import hibernate.SessionFactoryCreator;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisStringCommands;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.hibernate.Session;
 import redis.CityCountry;
 import redis.Language;
 import redis.RedisService;
+import util.Constants;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
+@Slf4j
 public class Main {
 
     private final DaoService daoService;
@@ -34,37 +38,38 @@ public class Main {
         List<CityCountry> preparedData = main.transformData(allCities);
         main.redisService.pushToRedis(preparedData);
 
-        //закроем текущую сессию, чтоб точно делать запрос к БД, а не вытянуть данные из кэша
+        // make the cache unavailable for correct testing
         main.daoService.closeSession();
 
-
-        //выбираем случайных 10 id городов
-        //так как мы не делали обработку невалидных ситуаций, используй существующие в БД id
+        // take random real id for tests
         List<Integer> ids = List.of(3, 2545, 123, 4, 189, 89, 3458, 1189, 10, 102);
 
-        System.out.println("start redis test");
+        log.info(Constants.START_REDIS_TEST);
         long startRedis = System.currentTimeMillis();
         main.testRedisData(ids);
         long stopRedis = System.currentTimeMillis();
-        System.out.println("end redis test");
+        log.info(Constants.END_REDIS_TEST);
 
-        System.out.println("start mysql test");
+
+        log.info(Constants.START_MYSQL_TEST);
         long startMysql = System.currentTimeMillis();
         main.testMysqlData(ids);
         long stopMysql = System.currentTimeMillis();
-        System.out.println("end mysql test");
+        log.info(Constants.END_MYSQL_TEST);
 
-        System.out.printf("%s:\t%d ms\n", "Redis", (stopRedis - startRedis));
-        System.out.printf("%s:\t%d ms\n", "MySQL", (stopMysql - startMysql));
+        log.info(new StringFormattedMessage(Constants.MESSAGE_PATTERN, Constants.REDIS_TEST, (stopRedis - startRedis)).toString());
+        log.info(new StringFormattedMessage(Constants.MESSAGE_PATTERN, Constants.MY_SQL_TEST, (stopMysql - startMysql)).toString());
 
         main.shutdown();
     }
+
 
     private void testMysqlData(List<Integer> ids) {
         try (Session session = daoService.getSessionFactory().getCurrentSession()) {
             session.beginTransaction();
             for (Integer id : ids) {
                 City city = daoService.getCityDAO().getById(id);
+                @SuppressWarnings(Constants.UNUSED) // needed for test
                 Set<CountryLanguage> languages = city.getCountry().getLanguages();
             }
             session.getTransaction().commit();
@@ -90,7 +95,7 @@ public class Main {
             daoService.closeSession();
         }
         if (nonNull(redisService.client)) {
-            redisService.client.shutdown();
+            redisService.shutdown();
         }
     }
 
@@ -123,22 +128,4 @@ public class Main {
             return res;
         }).collect(Collectors.toList());
     }
-
-    // TODO move ???
-//    private List<City> getData(Main main) {
-//        try (Session session = main.sessionFactory.getCurrentSession()) {
-//            List<City> allCities = new ArrayList<>();
-//            session.beginTransaction();
-//            List<Country> countries = main.daoService.getCountryDAO().getAll();
-//
-//            int totalCount = main.cityDAO.getTotalCount();
-//            int step = 500;
-//            for (int i = 0; i < totalCount; i += step) {
-//                allCities.addAll(main.cityDAO.getAll(i, step));
-//            }
-//            session.getTransaction().commit();
-//            return allCities;
-//        }
-//    }
-
 }

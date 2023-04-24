@@ -3,11 +3,12 @@ package entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import util.Constants;
 
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "country_language")
+@Table(name = Constants.COUNTRY_LANGUAGE)
 @Getter
 @Setter
 public class CountryLanguage {
@@ -15,7 +16,7 @@ public class CountryLanguage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @ManyToOne
-    @JoinColumn(name = "country_id")
+    @JoinColumn(name = Constants.COUNTRY_ID)
     private Country country;
     private String language;
     @Column(columnDefinition = "BIT")

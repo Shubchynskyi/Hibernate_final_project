@@ -3,6 +3,7 @@ package dao;
 import entity.City;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
+import util.Constants;
 
 import java.util.List;
 
@@ -32,8 +33,13 @@ public class CityDAO {
     }
 
     public City getById(Integer id) {
-        Query<City> query = sessionFactory.getCurrentSession().createQuery("select c from City c join fetch c.country where c.id = :ID", City.class);
-        query.setParameter("ID", id);
+        String hql = """
+                SELECT c FROM City c
+                JOIN FETCH c.country
+                WHERE c.id = :ID
+                """;
+        Query<City> query = sessionFactory.getCurrentSession().createQuery(hql, City.class);
+        query.setParameter(Constants.ID, id);
         return query.getSingleResult();
     }
 }

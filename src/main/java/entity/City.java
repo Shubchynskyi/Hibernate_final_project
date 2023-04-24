@@ -3,10 +3,10 @@ package entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+import util.Constants;
 
 @Entity
-@Table(name = "city")
+@Table(name = Constants.CITY)
 @Getter
 @Setter
 public class City {
@@ -17,7 +17,7 @@ public class City {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "country_id")
+    @JoinColumn(name = Constants.COUNTRY_ID)
     private Country country;
     private String district;
     private Integer population;

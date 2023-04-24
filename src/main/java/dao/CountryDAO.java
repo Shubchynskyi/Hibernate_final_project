@@ -15,7 +15,7 @@ public class CountryDAO {
 
     public List<Country> getAll() {
         String hql = """
-                SELECT c FROM Country c 
+                SELECT c FROM Country c
                 JOIN FETCH c.languages
                 """;
         Query<Country> query = sessionFactory.getCurrentSession().createQuery(hql, Country.class);

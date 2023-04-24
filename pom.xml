@@ -36,12 +36,6 @@
 
         <!-- ******************************** for hibernate ******************************** -->
 
-        <!-- https://mvnrepository.com/artifact/p6spy/p6spy -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-            <version>3.9.1</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
@@ -71,7 +65,25 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!--        logger slf4j-log4j-->
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <!--  do NOT update! Versions 2.*.* work incorrect with log4j2-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version> <!-- do NOT update-->
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
     </dependencies>
-
-
 </project>
