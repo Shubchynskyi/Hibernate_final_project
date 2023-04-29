@@ -33,7 +33,7 @@ public class DaoService {
         try (Session session = sessionFactory.getCurrentSession()) {
             List<City> allCities = new ArrayList<>();
             session.beginTransaction();
-            @SuppressWarnings("unused") // needed to reduce the number of queries
+            @SuppressWarnings("unused") // needed for reduce the number of queries
             List<Country> countries = countryDAO.getAll();
 
             int totalCount = cityDAO.getTotalCount();
